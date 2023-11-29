@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.opensearch.agent_tool.ppl;
+package org.opensearch.agent_tool.tools;
 
 import com.google.gson.Gson;
 import lombok.Getter;
@@ -29,6 +29,7 @@ import org.opensearch.ml.common.input.MLInput;
 import org.opensearch.ml.common.output.model.ModelTensor;
 import org.opensearch.ml.common.output.model.ModelTensorOutput;
 import org.opensearch.ml.common.output.model.ModelTensors;
+import org.opensearch.ml.common.spi.MLCommonsExtension;
 import org.opensearch.ml.common.spi.tools.Tool;
 import org.opensearch.ml.common.spi.tools.ToolAnnotation;
 import org.opensearch.ml.common.transport.MLTaskResponse;
@@ -51,7 +52,6 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -59,7 +59,6 @@ import java.util.StringJoiner;
 @ToolAnnotation(PPLTool.TYPE)
 public class PPLTool implements Tool {
 
-    public PPLTool() {}
     public static final String TYPE = "PPLTool";
 
     @Setter
@@ -150,10 +149,6 @@ public class PPLTool implements Tool {
         return name;
     }
 
-    public Tool.Factory<PPLTool> getFactory() {
-        return new Factory();
-    }
-
 
     @Override
     public boolean validate(Map<String, String> parameters) {
@@ -180,7 +175,7 @@ public class PPLTool implements Tool {
             }
         }
 
-        public void initClient(Client client) {
+        public void init(Client client) {
             this.client = client;
         }
 

@@ -38,7 +38,7 @@ repositories {
 }
 
 allprojects {
-    group 'org.opensearch.agent_tool'
+    group 'org.opensearch.plugin'
     version = opensearch_version.tokenize('-')[0] + '.0'
     if (buildVersionQualifier) {
         version += "-${buildVersionQualifier}"
@@ -57,11 +57,15 @@ apply plugin: 'signing'
 apply plugin: 'maven-publish'
 apply plugin: 'opensearch.repositories'
 apply from: 'build-tools/opensearchplugin-coverage.gradle'
+apply plugin: 'opensearch.opensearchplugin'
+apply plugin: 'opensearch.testclusters'
+apply plugin: 'opensearch.pluginzip'
 
 
 dependencies {
     compileOnly "org.opensearch.client:opensearch-rest-high-level-client:${opensearch_version}"
     compileOnly group: 'org.opensearch', name:'opensearch-ml-client', version: "${version}"
+//    implementation group: 'org.opensearch', name:'opensearch-ml-spi', version: "${version}"
     implementation(group: 'opensearch-sql', name: 'opensearch-sql', version: "${version}") {
         exclude module: 'legacy'
         exclude module: 'prometheus'
@@ -76,6 +80,15 @@ dependencies {
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
         exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
         exclude group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-cbor'
+    }
+    implementation(group: 'opensearch-sql', name: 'ppl', version: "${version}") {
+        exclude module: 'common'
+        exclude module: 'core'
+        exclude module: 'protocol'
+        exclude module: 'opensearch'
+        exclude group: 'org.reflections', module: 'reflections'
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'org.json', module: 'json'
     }
     compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
     testImplementation "org.opensearch.test:framework:${opensearch_version}"
@@ -109,37 +122,44 @@ spotless {
     }
 }
 
+compileJava {
+    options.compilerArgs.addAll(["-processor", 'lombok.launch.AnnotationProcessorHider$AnnotationProcessor'])
+}
+
+compileTestJava {
+    options.compilerArgs.addAll(["-processor", 'lombok.launch.AnnotationProcessorHider$AnnotationProcessor'])
+}
+
 
 //task sourcesJar(type: Jar) {
 //    archiveClassifier = 'sources'
 //    from sourceSets.main.allJava
 //}
 
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
+//task javadocJar(type: Jar) {
+//    archiveClassifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
 
-jar {
-    archiveClassifier = null
-    from {
-        configurations
-                .runtimeClasspath
-                .collect {
-                    if(it.name.startsWith("opensearch-sql")
-                    || it.name.startsWith("ppl.jar")
-                    || it.name.startsWith("protocol.jar")) {
-                        zipTree(it)
-                    }
-                }
-    }
-}
 
 //shadowJar {
-//    archiveClassifier = 'all'
-//    exclude 'com/google'
+//    archiveClassifier = null
+//    exclude 'com/google/**'
 //    exclude 'com/fasterxml/**'
 //}
+
+configurations.all {
+    resolutionStrategy.force "org.mockito:mockito-core:5.5.0"
+}
+
+opensearchplugin {
+    name 'agent-tools'
+    description 'OpenSearch Agent Tools'
+    classname 'org.opensearch.agent_tool.ToolPlugin'
+    extendedPlugins = ['opensearch-ml']
+    licenseFile rootProject.file("LICENSE.txt")
+    noticeFile rootProject.file("NOTICE")
+}
 
 publishing {
     repositories {
@@ -157,21 +177,11 @@ publishing {
         }
     }
     publications {
-        customJar(MavenPublication) {
-            groupId = 'org.opensearch'
-            artifactId = 'agent-tools'
-            artifact jar
-
+        pluginZip(MavenPublication) { publication ->
             pom {
                 name = "OpenSearch Agent Tools"
-                packaging = "jar"
-                url = "https://github.com/zane-neo/agent-tools"
                 description = "OpenSearch Agent Tools"
-                scm {
-                    connection = "scm:git@github.com:zane-neo/agent-tools.git"
-                    developerConnection = "scm:git@github.com:zane-neo/agent-tools.git"
-                    url = "git@github.com:zane-neo/agent-tools.git"
-                }
+                groupId = "org.opensearch.plugin"
                 licenses {
                     license {
                         name = "The Apache License, Version 2.0"
@@ -180,18 +190,18 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = "amazonwebservices"
-                        organization = "Amazon Web Services"
-                        organizationUrl = "https://aws.amazon.com"
+                        name = "OpenSearch"
+                        url = "https://github.com/opensearch-project/agent-tools"
                     }
                 }
             }
         }
     }
-
     gradle.startParameter.setShowStacktrace(ShowStacktrace.ALWAYS)
     gradle.startParameter.setLogLevel(LogLevel.DEBUG)
 }
+
+tasks.publishNebulaPublicationToMavenLocal.dependsOn ':generatePomFileForPluginZipPublication'
 
 // updateVersion: Task to auto increment to the next development iteration
 task updateVersion {
