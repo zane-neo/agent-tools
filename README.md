@@ -1,8 +1,8 @@
-[![codecov](https://codecov.io/gh/opensearch-project/common-utils/branch/main/graph/badge.svg)](https://codecov.io/gh/opensearch-project/common-utils)
+[![codecov](https://codecov.io/gh/opensearch-project/agent-tools/branch/main/graph/badge.svg)](https://codecov.io/gh/opensearch-project/agent-tools)
 
 <img src="https://opensearch.org/assets/img/opensearch-logo-themed.svg" height="64px">
 
-- [OpenSearch Common Utils](#opensearch-common-utils)
+- [OpenSearch Common Utils](#opensearch-agent-tools)
 - [Contributing](#contributing)
 - [Getting Help](#getting-help)
 - [Code of Conduct](#code-of-conduct)
