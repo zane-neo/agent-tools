@@ -63,7 +63,6 @@ apply plugin: 'opensearch.pluginzip'
 
 
 dependencies {
-    compileOnly "org.opensearch.client:opensearch-rest-high-level-client:${opensearch_version}"
     compileOnly group: 'org.opensearch', name:'opensearch-ml-client', version: "${version}"
 //    implementation group: 'org.opensearch', name:'opensearch-ml-spi', version: "${version}"
     implementation(group: 'opensearch-sql', name: 'opensearch-sql', version: "${version}") {
@@ -89,6 +88,13 @@ dependencies {
         exclude group: 'org.reflections', module: 'reflections'
         exclude group: 'com.google.guava', module: 'guava'
         exclude group: 'org.json', module: 'json'
+    }
+    implementation (group: 'opensearch-sql', name: 'protocol', version: "${version}") {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+        exclude group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-cbor'
+        exclude group: 'com.google.code.gson', module: 'gson'
     }
     compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
     testImplementation "org.opensearch.test:framework:${opensearch_version}"
