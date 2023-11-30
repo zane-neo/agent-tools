@@ -53,6 +53,6 @@ public class ToolPlugin extends Plugin implements MLCommonsExtension {
 
     @Override
     public List<Tool.Factory<? extends Tool>> getToolFactories() {
-        return List.of(new PPLTool.Factory());
+        return List.of(PPLTool.Factory.getInstance());
     }
 }
